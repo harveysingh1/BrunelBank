@@ -1,4 +1,5 @@
 ﻿using BrunelBank;
+using CommonComponents.Packets;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -46,14 +47,11 @@ namespace CommonComponents
             this.listenerPort = listenerPort;
         }
 
-        void InformSender()
+        public string CreateTransferPacket(string accountNumber, string amount, string receivingAccount)
         {
-
-        }
-
-        void InformReceiver()
-        {
-
+            IPacket packet = new TransferPacket(amount, receivingAccount);
+            packet.SetValue(accountNumber, listenerPort.ToString());
+            return packet.Body;
         }
 
         public void ListenForInput()

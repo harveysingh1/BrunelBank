@@ -37,8 +37,19 @@ namespace BrunelBank
                         Console.WriteLine("Welcome to your banking system Account Number: {0}", e.AccountNumber);                        
                         break;
 
-                    case ("D"):
-                        //Console.WriteLine("{0}: {1}", e.Username, e.Message);
+                    case ("T"):
+                        if (System.Convert.ToInt32(e.AccountNumber) == accountNumber)
+                        {
+                            Console.WriteLine("You have successfully transferred £{0} to Account Number {1}", e.Amount, e.ReceivingAccount);
+                            int transferred = System.Convert.ToInt32(e.Amount);
+                            WithdrawMoney(transferred, clientWorker);
+                        }
+                        else if (System.Convert.ToInt32(e.ReceivingAccount) == accountNumber)
+                        {
+                            Console.WriteLine("£{0} has been successfully transferred into your account from Account Number {1}", e.Amount, e.AccountNumber);
+                            int transferred = System.Convert.ToInt32(e.Amount);
+                            TransferDeposit(transferred, clientWorker);
+                        }
                         break;
 
                     default:
@@ -96,7 +107,11 @@ namespace BrunelBank
 
                 case (4):
                     Console.WriteLine();
-                    Console.WriteLine("Please enter the account that you would like to transfer money to, followed by the amount");
+                    Console.WriteLine("Please enter the account that you would like to transfer money to, followed by the amount separated by a comma");
+                    string str = Console.ReadLine();
+                    string[] transferValues = str.Split(',');
+                    TransferMoney(transferValues[1], clientWorker, transferValues[0]);
+
                     break;
                 default:
             	    break;
@@ -116,9 +131,14 @@ namespace BrunelBank
             clientWorker.SendPacket(IP, DepositPacket);
         }
 
-        private static void TransferMoney(int transfer, Client clientWorker, string receivingAccount)
+        private static void TransferDeposit(int transfer, Client clientWorker)
         {
-            string TransferPacket = clientWorker.CreateTransferPacket(accountNumber.ToString(), transfer.ToString(), receivingAccount);
+            clientWorker.Balance += transfer;
+        }
+
+        private static void TransferMoney(string transfer, Client clientWorker, string receivingAccount)
+        {
+            string TransferPacket = clientWorker.CreateTransferPacket(accountNumber.ToString(), transfer, receivingAccount);
             clientWorker.SendPacket(IP, TransferPacket);
         }
 

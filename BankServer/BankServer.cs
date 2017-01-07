@@ -57,7 +57,13 @@ namespace BankServer
                         {
                             if(kvp.Key == e.AccountNumber)
                             {
-                                InformSender(kvp.Key, kvp.Value, e.Amount);
+                                int senderPort = System.Convert.ToInt32(kvp.Value);
+                                InformSender(tranPacket, senderPort);
+                            }
+                            else if (kvp.Key == e.ReceivingAccount)
+                            {
+                                int senderPort = System.Convert.ToInt32(kvp.Value);
+                                InformReceiver(tranPacket, senderPort);
                             }
                         }
                         break;
@@ -69,9 +75,37 @@ namespace BankServer
             #endregion
         }
 
-        private static void InformSender(string account, string port, string amount)
+        private static void InformSender(string tranPacket, int port)
         {
+            TcpClient tcpClient = new TcpClient();
+            tcpClient.Connect(IP, port);
             
+            // Checks if the client has connected successfully
+            if (tcpClient.Connected)
+            {
+                // Sends the packet through the stream
+                StreamWriter sw = new StreamWriter(tcpClient.GetStream());
+                sw.Write(tranPacket);
+                sw.Flush();
+                sw.Close();
+            }
+            tcpClient.Close();
+        }
+        private static void InformReceiver(string tranPacket, int port)
+        {
+            TcpClient tcpClient = new TcpClient();
+            tcpClient.Connect(IP, port);
+
+            // Checks if the client has connected successfully
+            if (tcpClient.Connected)
+            {
+                // Sends the packet through the stream
+                StreamWriter sw = new StreamWriter(tcpClient.GetStream());
+                sw.Write(tranPacket);
+                sw.Flush();
+                sw.Close();
+            }
+            tcpClient.Close();
         }
 
         private static void SendClientsMessage(string IP, int port, string packet)
@@ -89,11 +123,6 @@ namespace BankServer
                 sw.Close();
             }
             tcpClient.Close();
-        }
-
-        private static void InformReceiver()
-        {
-
         }
 
     }
