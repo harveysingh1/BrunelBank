@@ -16,8 +16,13 @@ namespace BankServer
         private const int listenerPort = 8888;
         private const string IP = "127.0.0.1";
 
+        // For every connection, we will store which ports have been used
+        // by the client to connect to the server in the format AccountNumber, PortNumber
+        
         static void Main(string[] args)
         {
+            List<KeyValuePair<String, String>> portsAccounts = new List<KeyValuePair<String, String>>();
+
             Console.WriteLine("Starting Server...");
             Server serverWorker = new Server(listenerPort);
             serverWorker.Start();
@@ -34,7 +39,7 @@ namespace BankServer
                         Console.WriteLine("{0} has logged into the banking system.", e.AccountNumber);
                         string[] loginPacket = serverWorker.GetPacketFromArrayList();
                         string logPacket = string.Join("~", loginPacket);
-                        //SendClientsMessage(IP, System.Convert.ToInt32(e.SenderPort), logPacket);
+                        portsAccounts.Add(new KeyValuePair<String, String>(e.AccountNumber, e.SenderPort));
                         break;
 
                     case ("D"):
@@ -46,13 +51,27 @@ namespace BankServer
 
                     case ("T"):
                         Console.WriteLine("Account {0} has transferred £{1} into Account {2}", e.AccountNumber, e.Amount, e.ReceivingAccount);
-                        InformSender(e.AccountNumber, )
+                        string[] transferPacket = serverWorker.GetPacketFromArrayList();
+                        string tranPacket = string.Join("~", transferPacket);
+                        foreach (KeyValuePair<String, String> kvp in portsAccounts)
+                        {
+                            if(kvp.Key == e.AccountNumber)
+                            {
+                                InformSender(kvp.Key, kvp.Value, e.Amount);
+                            }
+                        }
                         break;
+
                     default:
                         break;
                 }
             };
             #endregion
+        }
+
+        private static void InformSender(string account, string port, string amount)
+        {
+            
         }
 
         private static void SendClientsMessage(string IP, int port, string packet)
@@ -72,12 +91,7 @@ namespace BankServer
             tcpClient.Close();
         }
 
-        InformSender()
-        {
-
-        }
-
-        InformReceiver()
+        private static void InformReceiver()
         {
 
         }

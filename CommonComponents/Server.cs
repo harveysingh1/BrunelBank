@@ -46,6 +46,16 @@ namespace CommonComponents
             this.listenerPort = listenerPort;
         }
 
+        void InformSender()
+        {
+
+        }
+
+        void InformReceiver()
+        {
+
+        }
+
         public void ListenForInput()
         {
             serverListener.Start();

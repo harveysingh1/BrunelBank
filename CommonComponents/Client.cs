@@ -66,6 +66,13 @@ namespace CommonComponents
             return packet.Body;
         }
 
+        public string CreateTransferPacket(string accountNumber, string amount, string receivingAccount)
+        {
+            IPacket packet = new TransferPacket(amount, receivingAccount);
+            packet.SetValue(accountNumber, listenerPort.ToString());
+            return packet.Body;
+        }
+
         public void ListenForInput()
         {
             clientListener.Start();

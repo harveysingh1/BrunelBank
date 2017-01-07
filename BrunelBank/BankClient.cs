@@ -96,7 +96,7 @@ namespace BrunelBank
 
                 case (4):
                     Console.WriteLine();
-                    Console.WriteLine("Please enter");
+                    Console.WriteLine("Please enter the account that you would like to transfer money to, followed by the amount");
                     break;
                 default:
             	    break;
@@ -116,9 +116,10 @@ namespace BrunelBank
             clientWorker.SendPacket(IP, DepositPacket);
         }
 
-        private static void TransferMoney(int transfer, Client clientWorker)
+        private static void TransferMoney(int transfer, Client clientWorker, string receivingAccount)
         {
-
+            string TransferPacket = clientWorker.CreateTransferPacket(accountNumber.ToString(), transfer.ToString(), receivingAccount);
+            clientWorker.SendPacket(IP, TransferPacket);
         }
 
         private static string Login(Client clientWorker)
