@@ -41,10 +41,9 @@ namespace CommonComponents
         }
 
         // Specify the ports used for the server for sending and receiving packets
-        public Server(int listenerPort, int senderPort)
+        public Server(int listenerPort)
         {
             this.listenerPort = listenerPort;
-            this.senderPort = senderPort;
         }
 
         public void ListenForInput()

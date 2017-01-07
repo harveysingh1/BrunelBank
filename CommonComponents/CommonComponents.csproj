@@ -52,6 +52,7 @@
     <Compile Include="Packets\DepositPacket.cs" />
     <Compile Include="Packets\IPacket.cs" />
     <Compile Include="Packets\LoginPacket.cs" />
+    <Compile Include="Packets\TransferPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />
   </ItemGroup>

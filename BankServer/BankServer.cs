@@ -12,14 +12,14 @@ namespace BankServer
     class BankServer
     {
         // Specify ports to listen and send on, and IP here
-        private const int senderPort = 8887;
+        private int senderPort;
         private const int listenerPort = 8888;
         private const string IP = "127.0.0.1";
 
         static void Main(string[] args)
         {
             Console.WriteLine("Starting Server...");
-            Server serverWorker = new Server(listenerPort, senderPort);
+            Server serverWorker = new Server(listenerPort);
             serverWorker.Start();
             Console.WriteLine("Server started, waiting for packets...");
 
@@ -34,16 +34,20 @@ namespace BankServer
                         Console.WriteLine("{0} has logged into the banking system.", e.AccountNumber);
                         string[] loginPacket = serverWorker.GetPacketFromArrayList();
                         string logPacket = string.Join("~", loginPacket);
-                        SendClientsMessage(IP, System.Convert.ToInt32(e.SenderPort), logPacket);
+                        //SendClientsMessage(IP, System.Convert.ToInt32(e.SenderPort), logPacket);
                         break;
 
-                    case ("M"):
-                        //Console.WriteLine("{0}: {1}", e.Username, e.Message);
+                    case ("D"):
+                        Console.WriteLine("Account {0} has deposited £{1} into their account.", e.AccountNumber, e.Amount);
                         string[] packetReceivedFromClient = serverWorker.GetPacketFromArrayList();
                         string stringPacket = string.Join("~", packetReceivedFromClient);
-                        SendClientsMessage(IP, senderPort, stringPacket);
+                        SendClientsMessage(IP, System.Convert.ToInt32(e.SenderPort), stringPacket);
                         break;
 
+                    case ("T"):
+                        Console.WriteLine("Account {0} has transferred £{1} into Account {2}", e.AccountNumber, e.Amount, e.ReceivingAccount);
+                        InformSender(e.AccountNumber, )
+                        break;
                     default:
                         break;
                 }
@@ -67,5 +71,16 @@ namespace BankServer
             }
             tcpClient.Close();
         }
+
+        InformSender()
+        {
+
+        }
+
+        InformReceiver()
+        {
+
+        }
+
     }
 }

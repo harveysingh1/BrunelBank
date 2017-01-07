@@ -59,6 +59,13 @@ namespace CommonComponents
 
         }
 
+        public string CreateDepositPacket(string accountNumber, string deposit)
+        {
+            IPacket packet = new DepositPacket(deposit);
+            packet.SetValue(accountNumber, listenerPort.ToString());
+            return packet.Body;
+        }
+
         public void ListenForInput()
         {
             clientListener.Start();

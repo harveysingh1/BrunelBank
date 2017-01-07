@@ -17,9 +17,9 @@ namespace BrunelBank
 
             // If the packet the user is making is a transfer, specify
             // which account the money is being transferred to.
-            if (packet.Length == 4)
+            if (packet.Length == 5)
             {
-                ReceivingAccount = packet[3];
+                ReceivingAccount = packet[4];
             }
         }
 

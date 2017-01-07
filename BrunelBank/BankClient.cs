@@ -18,7 +18,7 @@ namespace BrunelBank
         private static int listenerPort;        
 
         private const string IP = "127.0.0.1";
-        private int accountNumber;
+        private static int accountNumber;
 
         static void Main(string[] args)
         {
@@ -48,6 +48,7 @@ namespace BrunelBank
             #endregion 
 
             string accountLoggedIn = Login(clientWorker);
+            accountNumber = System.Convert.ToInt32(accountLoggedIn);
             clientWorker.AccountNumber = System.Convert.ToInt32(accountLoggedIn);
 
             while (true)
@@ -63,8 +64,8 @@ namespace BrunelBank
             Console.WriteLine();
             Console.WriteLine("1) Check balance on account");
             Console.WriteLine("2) Deposit money into the account");
-            Console.WriteLine("3) Transfer money to another account");
-            Console.WriteLine("4) Withdraw money");
+            Console.WriteLine("3) Withdraw money");
+            Console.WriteLine("4) Transfer money to another account");
 
             string option = Console.ReadLine();
 
@@ -73,8 +74,50 @@ namespace BrunelBank
                 case (1):
                     Console.WriteLine();
                     Console.WriteLine("Your current balance is: £{0}", clientWorker.Balance);
-            	break;
+                    break;
+
+                case (2):
+                    Console.WriteLine();
+                    Console.WriteLine("How much would you like to deposit into your account?");
+                    string deposit = Console.ReadLine();
+                    int depositInt = System.Convert.ToInt32(deposit);
+                    DepositMoney(depositInt, clientWorker);
+                    Console.WriteLine("Your new balance is now: £{0}", clientWorker.Balance);
+                    break;
+
+                case (3):
+                    Console.WriteLine();
+                    Console.WriteLine("How much would you like to withdraw from your account?");
+                    string withdraw = Console.ReadLine();
+                    int withdrawInt = System.Convert.ToInt32(withdraw);
+                    WithdrawMoney(withdrawInt, clientWorker);
+                    Console.WriteLine("Your new balance is now £{0}", clientWorker.Balance);
+                    break;
+
+                case (4):
+                    Console.WriteLine();
+                    Console.WriteLine("Please enter");
+                    break;
+                default:
+            	    break;
             }
+
+        }
+
+        private static void WithdrawMoney(int withdraw, Client clientWorker)
+        {
+            clientWorker.Balance -= withdraw;
+        }
+
+        private static void DepositMoney(int deposit, Client clientWorker)
+        {
+            clientWorker.Balance += deposit;
+            string DepositPacket = clientWorker.CreateDepositPacket(accountNumber.ToString(), deposit.ToString());
+            clientWorker.SendPacket(IP, DepositPacket);
+        }
+
+        private static void TransferMoney(int transfer, Client clientWorker)
+        {
 
         }
 
