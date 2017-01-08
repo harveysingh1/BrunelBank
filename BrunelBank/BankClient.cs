@@ -130,20 +130,29 @@ namespace BrunelBank
 
         private static void DepositMoney(int deposit, Client clientWorker)
         {
-            clientWorker.Balance += deposit;
-            string DepositPacket = clientWorker.CreateDepositPacket(accountNumber.ToString(), deposit.ToString());
-            clientWorker.SendPacket(IP, DepositPacket);
+            lock (clientWorker)
+            {
+                clientWorker.Balance += deposit;
+                string DepositPacket = clientWorker.CreateDepositPacket(accountNumber.ToString(), deposit.ToString());
+                clientWorker.SendPacket(IP, DepositPacket);
+            }
         }
 
         private static void TransferDeposit(int transfer, Client clientWorker)
         {
-            clientWorker.Balance += transfer;
+            lock (clientWorker)
+            {
+                clientWorker.Balance += transfer;
+            }
         }
 
         private static void TransferMoney(string transfer, Client clientWorker, string receivingAccount)
         {
-            string TransferPacket = clientWorker.CreateTransferPacket(accountNumber.ToString(), transfer, receivingAccount);
-            clientWorker.SendPacket(IP, TransferPacket);
+            lock (clientWorker)
+            {
+                string TransferPacket = clientWorker.CreateTransferPacket(accountNumber.ToString(), transfer, receivingAccount);
+                clientWorker.SendPacket(IP, TransferPacket);
+            }
         }
 
         private static string Login(Client clientWorker)
