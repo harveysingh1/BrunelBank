@@ -15,12 +15,14 @@ namespace BankServer
         private int senderPort;
         private const int listenerPort = 8888;
         private const string IP = "127.0.0.1";
+        private static Object thisLock = new Object();
 
         // For every connection, we will store which ports have been used
         // by the client to connect to the server in the format AccountNumber, PortNumber
-        
+
         static void Main(string[] args)
         {
+            
             List<KeyValuePair<String, String>> portsAccounts = new List<KeyValuePair<String, String>>();
 
             Console.WriteLine("Starting Server...");
@@ -55,16 +57,29 @@ namespace BankServer
                         string tranPacket = string.Join("~", transferPacket);
                         foreach (KeyValuePair<String, String> kvp in portsAccounts)
                         {
-                            if(kvp.Key == e.AccountNumber)
+                            if (kvp.Key == e.AccountNumber || kvp.Key == e.ReceivingAccount)
                             {
                                 int senderPort = System.Convert.ToInt32(kvp.Value);
-                                InformSender(tranPacket, senderPort);
+                                lock (kvp.Key)
+                                {
+                                    if (kvp.Key == e.ReceivingAccount)
+                                    {
+                                        InformReceiver(tranPacket, senderPort);
+                                        Console.WriteLine("receiver has lock");
+                                    }
+
+                                    InformSender(tranPacket, senderPort);
+                                    Console.WriteLine("sender has lock");
+                                }
                             }
-                            else if (kvp.Key == e.ReceivingAccount)
-                            {
-                                int senderPort = System.Convert.ToInt32(kvp.Value);
-                                InformReceiver(tranPacket, senderPort);
-                            }
+                            //else if (kvp.Key == e.ReceivingAccount)
+                            //{
+                            //    int senderPort = System.Convert.ToInt32(kvp.Value);
+                            //    lock(kvp.Key)
+                            //    {
+                            //        InformReceiver(tranPacket, senderPort);
+                            //    }
+                            //}
                         }
                         break;
 

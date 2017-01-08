@@ -13,6 +13,8 @@ namespace BrunelBank
 {
     public class BankClient
     {
+        private static Object thisLock = new Object();
+
         // Specify ports to listen and send on, and IP here
         private const int senderPort = 8888;
         private static int listenerPort;        
@@ -121,7 +123,10 @@ namespace BrunelBank
 
         private static void WithdrawMoney(int withdraw, Client clientWorker)
         {
-            clientWorker.Balance -= withdraw;
+            {
+                clientWorker.Balance -= withdraw;
+            }
+            
         }
 
         private static void DepositMoney(int deposit, Client clientWorker)
