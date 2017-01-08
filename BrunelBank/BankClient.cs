@@ -12,12 +12,10 @@ using System.Threading;
 namespace BrunelBank
 {
     public class BankClient
-    {
-        private static Object thisLock = new Object();
-
+    { 
         // Specify ports to listen and send on, and IP here
         private const int senderPort = 8888;
-        private static int listenerPort;        
+        private static int listenerPort;
 
         private const string IP = "127.0.0.1";
         private static int accountNumber;
@@ -123,6 +121,7 @@ namespace BrunelBank
 
         private static void WithdrawMoney(int withdraw, Client clientWorker)
         {
+            lock(clientWorker)
             {
                 clientWorker.Balance -= withdraw;
             }

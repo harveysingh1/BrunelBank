@@ -39,43 +39,52 @@ namespace BankServer
                 switch (e.Header)
                 {
                     case ("L"):
-                        Console.WriteLine("{0} has logged into the banking system.", e.AccountNumber);
-                        string[] loginPacket = serverWorker.GetPacketFromArrayList();
-                        string logPacket = string.Join("~", loginPacket);
-                        portsAccounts.Add(new KeyValuePair<String, String>(e.AccountNumber, e.SenderPort));
+                        lock(serverWorker){
+                            Console.WriteLine("{0} has logged into the banking system.", e.AccountNumber);
+                            string[] loginPacket = serverWorker.GetPacketFromArrayList();
+                            string logPacket = string.Join("~", loginPacket);
+                            portsAccounts.Add(new KeyValuePair<String, String>(e.AccountNumber, e.SenderPort));
+                        }
                         break;
 
                     case ("D"):
-                        Console.WriteLine("Account {0} has deposited £{1} into their account.", e.AccountNumber, e.Amount);
-                        string[] packetReceivedFromClient = serverWorker.GetPacketFromArrayList();
-                        string stringPacket = string.Join("~", packetReceivedFromClient);
-                        SendClientsMessage(IP, System.Convert.ToInt32(e.SenderPort), stringPacket);
+                        lock (serverWorker)
+                        {
+                            Console.WriteLine("Account {0} has deposited £{1} into their account.", e.AccountNumber, e.Amount);
+                            string[] packetReceivedFromClient = serverWorker.GetPacketFromArrayList();
+                            string stringPacket = string.Join("~", packetReceivedFromClient);
+                            SendClientsMessage(IP, System.Convert.ToInt32(e.SenderPort), stringPacket);
+                        }
                         break;
 
                     case ("T"):
                         string[] transferPacket = serverWorker.GetPacketFromArrayList();
                         string tranPacket = string.Join("~", transferPacket);
 
-                        foreach (KeyValuePair<String, String> kvp in portsAccounts)
+
+                        lock (serverWorker)
                         {
-                            if (kvp.Key == e.AccountNumber)
+                            foreach (KeyValuePair<String, String> kvp in portsAccounts)
                             {
-                                int senderPort = System.Convert.ToInt32(kvp.Value);
+                                if (kvp.Key == e.AccountNumber)
                                 {
-                                    InformSender(tranPacket, senderPort);
+                                    int senderPort = System.Convert.ToInt32(kvp.Value);
+                                    {
+                                        InformSender(tranPacket, senderPort);
 
-                                    /************* The method below is to demonstrate a deadlock **************/
-                                    //ThreadPool.QueueUserWorkItem(o => DeadlockInformSender(serverWorker, portsAccounts, e.AccountNumber, tranPacket));
+                                        /************* The method below is to demonstrate a deadlock **************/
+                                        //ThreadPool.QueueUserWorkItem(o => DeadlockInformSender(serverWorker, portsAccounts, e.AccountNumber, tranPacket));
+                                    }
                                 }
-                            }
-                            else if (kvp.Key == e.ReceivingAccount)
-                            {
-                                int senderPort = System.Convert.ToInt32(kvp.Value);
+                                else if (kvp.Key == e.ReceivingAccount)
                                 {
-                                    InformReceiver(tranPacket, senderPort);
+                                    int senderPort = System.Convert.ToInt32(kvp.Value);
+                                    {
+                                        InformReceiver(tranPacket, senderPort);
 
-                                    /************* The method below is to demonstrate a deadlock **************/
-                                    //ThreadPool.QueueUserWorkItem(o => DeadlockInformReceiver(serverWorker, portsAccounts, e.AccountNumber, tranPacket));
+                                        /************* The method below is to demonstrate a deadlock **************/
+                                        //ThreadPool.QueueUserWorkItem(o => DeadlockInformReceiver(serverWorker, portsAccounts, e.AccountNumber, tranPacket));
+                                    }
                                 }
                             }
                         }
