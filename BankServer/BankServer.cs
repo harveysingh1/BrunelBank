@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BankServer
@@ -22,7 +23,7 @@ namespace BankServer
 
         static void Main(string[] args)
         {
-            
+            // Create a keyvalue pair to show ports and their related accounts that are logged in
             List<KeyValuePair<String, String>> portsAccounts = new List<KeyValuePair<String, String>>();
 
             Console.WriteLine("Starting Server...");
@@ -55,31 +56,29 @@ namespace BankServer
                         Console.WriteLine("Account {0} has transferred £{1} into Account {2}", e.AccountNumber, e.Amount, e.ReceivingAccount);
                         string[] transferPacket = serverWorker.GetPacketFromArrayList();
                         string tranPacket = string.Join("~", transferPacket);
+
                         foreach (KeyValuePair<String, String> kvp in portsAccounts)
                         {
-                            if (kvp.Key == e.AccountNumber || kvp.Key == e.ReceivingAccount)
+                            if (kvp.Key == e.AccountNumber)
                             {
                                 int senderPort = System.Convert.ToInt32(kvp.Value);
-                                lock (kvp.Key)
                                 {
-                                    if (kvp.Key == e.ReceivingAccount)
-                                    {
-                                        InformReceiver(tranPacket, senderPort);
-                                        Console.WriteLine("receiver has lock");
-                                    }
-
                                     InformSender(tranPacket, senderPort);
-                                    Console.WriteLine("sender has lock");
+
+                                    /************* The method below is to demonstrate a deadlock **************/
+                                    //ThreadPool.QueueUserWorkItem(o => InformSender(serverWorker, portsAccounts, e.AccountNumber));
                                 }
                             }
-                            //else if (kvp.Key == e.ReceivingAccount)
-                            //{
-                            //    int senderPort = System.Convert.ToInt32(kvp.Value);
-                            //    lock(kvp.Key)
-                            //    {
-                            //        InformReceiver(tranPacket, senderPort);
-                            //    }
-                            //}
+                            else if (kvp.Key == e.ReceivingAccount)
+                            {
+                                int senderPort = System.Convert.ToInt32(kvp.Value);
+                                {
+                                    InformReceiver(tranPacket, senderPort);
+
+                                    /************* The method below is to demonstrate a deadlock **************/
+                                    //ThreadPool.QueueUserWorkItem(o => InformReceiver(serverWorker, portsAccounts, e.AccountNumber));
+                                }
+                            }
                         }
                         break;
 
@@ -94,7 +93,7 @@ namespace BankServer
         {
             TcpClient tcpClient = new TcpClient();
             tcpClient.Connect(IP, port);
-            
+
             // Checks if the client has connected successfully
             if (tcpClient.Connected)
             {
@@ -106,6 +105,7 @@ namespace BankServer
             }
             tcpClient.Close();
         }
+
         private static void InformReceiver(string tranPacket, int port)
         {
             TcpClient tcpClient = new TcpClient();
@@ -122,6 +122,58 @@ namespace BankServer
             }
             tcpClient.Close();
         }
+
+        /*************************************** The below InformSender and InformReceiver methods are to demonstrate what would occur
+        **************************************** during a deadlock. As stated below, the first thread would lock the serverWorker, and
+        **************************************** then go on to attempt to lock the portsAccounts KeyValuePair. At the same time, the
+        **************************************** second thread would attempt to lock the portsAccounts KeyvaluePair, and then try to lock
+        **************************************** the serverWorker. As the two methods cannot fulfill their duties without full access of
+        **************************************** each other, a deadlock occurs at the account level.
+        */
+
+
+        //private static void InformSender(Server serverWorker, List<KeyValuePair<String, String>> portsAccounts, string account)
+        //{
+        //    lock (serverWorker)
+        //    {
+        //        Console.WriteLine("Sender has locked B");
+        //        string[] transferPacket = serverWorker.GetPacketFromArrayList();
+        //        string tranPacket = string.Join("~", transferPacket);
+        //        Thread.Sleep(1000);
+        //        lock (portsAccounts)
+        //        {
+        //            foreach (KeyValuePair<String, String> kvp in portsAccounts)
+        //            {
+        //                if (kvp.Key == account)
+        //                {
+        //                    Console.WriteLine("Sender has locked A");
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //}
+
+        //private static void InformReceiver(Server serverWorker, List<KeyValuePair<String, String>> portsAccounts, string account)
+        //{
+        //    lock (portsAccounts)
+        //    {
+        //        Console.WriteLine("Receiver has locked A");
+        //        string[] transferPacket = serverWorker.GetPacketFromArrayList();
+        //        string tranPacket = string.Join("~", transferPacket);
+        //        Thread.Sleep(1000);
+        //        lock (serverWorker)
+        //        {
+        //            foreach (KeyValuePair<String, String> kvp in portsAccounts)
+        //            {
+        //                if (kvp.Key == account)
+        //                {
+        //                    Console.WriteLine("Receiver has locked B");
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         private static void SendClientsMessage(string IP, int port, string packet)
         {
