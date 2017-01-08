@@ -124,7 +124,7 @@ namespace BankServer
             tcpClient.Close();
         }
 
-        /*************************************** The below InformSender and InformReceiver methods are to demonstrate what would occur
+        /*************************************** The below DeadlockInformSender and DeadlockInformReceiver methods are to demonstrate what would occur
         **************************************** during a deadlock. As stated below, the first thread would lock the serverWorker, and
         **************************************** then go on to attempt to lock the portsAccounts KeyValuePair. At the same time, the
         **************************************** second thread would attempt to lock the portsAccounts KeyvaluePair, and then try to lock

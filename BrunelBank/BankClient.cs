@@ -75,8 +75,8 @@ namespace BrunelBank
             Console.WriteLine();
             Console.WriteLine("Please select from the following options:");
             Console.WriteLine();
-            Console.WriteLine("1) Check balance on account");
-            Console.WriteLine("2) Deposit money into the account");
+            Console.WriteLine("1) Check balance");
+            Console.WriteLine("2) Deposit money");
             Console.WriteLine("3) Withdraw money");
             Console.WriteLine("4) Transfer money to another account");
 
