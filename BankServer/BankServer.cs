@@ -53,7 +53,6 @@ namespace BankServer
                         break;
 
                     case ("T"):
-                        bool bothLocked = false;
                         string[] transferPacket = serverWorker.GetPacketFromArrayList();
                         string tranPacket = string.Join("~", transferPacket);
 
@@ -63,20 +62,20 @@ namespace BankServer
                             {
                                 int senderPort = System.Convert.ToInt32(kvp.Value);
                                 {
-                                    //InformSender(tranPacket, senderPort);
+                                    InformSender(tranPacket, senderPort);
 
                                     /************* The method below is to demonstrate a deadlock **************/
-                                    ThreadPool.QueueUserWorkItem(o => DeadlockInformSender(serverWorker, portsAccounts, e.AccountNumber, tranPacket));
+                                    //ThreadPool.QueueUserWorkItem(o => DeadlockInformSender(serverWorker, portsAccounts, e.AccountNumber, tranPacket));
                                 }
                             }
                             else if (kvp.Key == e.ReceivingAccount)
                             {
                                 int senderPort = System.Convert.ToInt32(kvp.Value);
                                 {
-                                    //InformReceiver(tranPacket, senderPort);
+                                    InformReceiver(tranPacket, senderPort);
 
                                     /************* The method below is to demonstrate a deadlock **************/
-                                    ThreadPool.QueueUserWorkItem(o => DeadlockInformReceiver(serverWorker, portsAccounts, e.AccountNumber, tranPacket));
+                                    //ThreadPool.QueueUserWorkItem(o => DeadlockInformReceiver(serverWorker, portsAccounts, e.AccountNumber, tranPacket));
                                 }
                             }
                         }
@@ -91,39 +90,39 @@ namespace BankServer
             #endregion
         }
 
-        //private static void InformSender(string tranPacket, int port)
-        //{
-        //    TcpClient tcpClient = new TcpClient();
-        //    tcpClient.Connect(IP, port);
+        private static void InformSender(string tranPacket, int port)
+        {
+            TcpClient tcpClient = new TcpClient();
+            tcpClient.Connect(IP, port);
 
-        //    // Checks if the client has connected successfully
-        //    if (tcpClient.Connected)
-        //    {
-        //        // Sends the packet through the stream
-        //        StreamWriter sw = new StreamWriter(tcpClient.GetStream());
-        //        sw.Write(tranPacket);
-        //        sw.Flush();
-        //        sw.Close();
-        //    }
-        //    tcpClient.Close();
-        //}
+            // Checks if the client has connected successfully
+            if (tcpClient.Connected)
+            {
+                // Sends the packet through the stream
+                StreamWriter sw = new StreamWriter(tcpClient.GetStream());
+                sw.Write(tranPacket);
+                sw.Flush();
+                sw.Close();
+            }
+            tcpClient.Close();
+        }
 
-        //private static void InformReceiver(string tranPacket, int port)
-        //{
-        //    TcpClient tcpClient = new TcpClient();
-        //    tcpClient.Connect(IP, port);
+        private static void InformReceiver(string tranPacket, int port)
+        {
+            TcpClient tcpClient = new TcpClient();
+            tcpClient.Connect(IP, port);
 
-        //    // Checks if the client has connected successfully
-        //    if (tcpClient.Connected)
-        //    {
-        //        // Sends the packet through the stream
-        //        StreamWriter sw = new StreamWriter(tcpClient.GetStream());
-        //        sw.Write(tranPacket);
-        //        sw.Flush();
-        //        sw.Close();
-        //    }
-        //    tcpClient.Close();
-        //}
+            // Checks if the client has connected successfully
+            if (tcpClient.Connected)
+            {
+                // Sends the packet through the stream
+                StreamWriter sw = new StreamWriter(tcpClient.GetStream());
+                sw.Write(tranPacket);
+                sw.Flush();
+                sw.Close();
+            }
+            tcpClient.Close();
+        }
 
         /*************************************** The below InformSender and InformReceiver methods are to demonstrate what would occur
         **************************************** during a deadlock. As stated below, the first thread would lock the serverWorker, and
@@ -134,72 +133,72 @@ namespace BankServer
         */
 
 
-        private static void DeadlockInformSender(Server serverWorker, List<KeyValuePair<String, String>> portsAccounts, string account, string tranPacket)
-        {
-            bool isLocked = false;
-            lock (serverWorker)
-            {
-                Console.WriteLine("Sender has locked B");
-                //string[] transferPacket = serverWorker.GetPacketFromArrayList();
-                //string tranPacket = string.Join("~", transferPacket);
-                Thread.Sleep(2000);
+        //private static void DeadlockInformSender(Server serverWorker, List<KeyValuePair<String, String>> portsAccounts, string account, string tranPacket)
+        //{
+        //    bool isLocked = false;
+        //    lock (serverWorker)
+        //    {
+        //        Console.WriteLine("Sender has locked B");
+        //        //string[] transferPacket = serverWorker.GetPacketFromArrayList();
+        //        //string tranPacket = string.Join("~", transferPacket);
+        //        Thread.Sleep(2000);
 
-                Console.WriteLine("Sender attempting to lock A...");
-                isLocked = Monitor.TryEnter(portsAccounts);
-                if (!isLocked)
-                {
-                    Console.WriteLine("Sender cannot access A as it is in use...");
-                }
-                else {
-                    lock (portsAccounts)
-                    {
-                        foreach (KeyValuePair<String, String> kvp in portsAccounts)
-                        {
-                            if (kvp.Key == account)
-                            {
-                                Console.WriteLine("Sender has locked A");
-                            }
-                        }
-                        Thread.Sleep(5000);
-                    }
-                }
+        //        Console.WriteLine("Sender attempting to lock A...");
+        //        isLocked = Monitor.TryEnter(portsAccounts);
+        //        if (!isLocked)
+        //        {
+        //            Console.WriteLine("Sender cannot access A as it is in use...");
+        //        }
+        //        else {
+        //            lock (portsAccounts)
+        //            {
+        //                foreach (KeyValuePair<String, String> kvp in portsAccounts)
+        //                {
+        //                    if (kvp.Key == account)
+        //                    {
+        //                        Console.WriteLine("Sender has locked A");
+        //                    }
+        //                }
+        //                Thread.Sleep(5000);
+        //            }
+        //        }
 
-            }
+        //    }
 
-        }
+        //}
 
-        private static void DeadlockInformReceiver(Server serverWorker, List<KeyValuePair<String, String>> portsAccounts, string account, string tranPacket)
-        {
-            bool isLocked = false;
-            lock (portsAccounts)
-            {
-                Console.WriteLine("Receiver has locked A");
-                Thread.Sleep(2000);
+        //private static void DeadlockInformReceiver(Server serverWorker, List<KeyValuePair<String, String>> portsAccounts, string account, string tranPacket)
+        //{
+        //    bool isLocked = false;
+        //    lock (portsAccounts)
+        //    {
+        //        Console.WriteLine("Receiver has locked A");
+        //        Thread.Sleep(2000);
 
-                Console.WriteLine("Receiver attempting to lock B...");
-                isLocked = Monitor.TryEnter(serverWorker);
-                if (!isLocked)
-                {
-                    Console.WriteLine("Receiver cannot access B as it is in use...");
-                }
-                else
-                {
-                    lock (serverWorker)
-                    {
-                        //string[] transferPacket = serverWorker.GetPacketFromArrayList();
-                        //string tranPacket = string.Join("~", transferPacket);
-                        foreach (KeyValuePair<String, String> kvp in portsAccounts)
-                        {
-                            if (kvp.Key == account)
-                            {
-                                Console.WriteLine("Receiver has locked B");
-                            }
-                        }
-                        Thread.Sleep(5000);
-                    }
-                }
-            }
-        }
+        //        Console.WriteLine("Receiver attempting to lock B...");
+        //        isLocked = Monitor.TryEnter(serverWorker);
+        //        if (!isLocked)
+        //        {
+        //            Console.WriteLine("Receiver cannot access B as it is in use...");
+        //        }
+        //        else
+        //        {
+        //            lock (serverWorker)
+        //            {
+        //                //string[] transferPacket = serverWorker.GetPacketFromArrayList();
+        //                //string tranPacket = string.Join("~", transferPacket);
+        //                foreach (KeyValuePair<String, String> kvp in portsAccounts)
+        //                {
+        //                    if (kvp.Key == account)
+        //                    {
+        //                        Console.WriteLine("Receiver has locked B");
+        //                    }
+        //                }
+        //                Thread.Sleep(5000);
+        //            }
+        //        }
+        //    }
+        //}
 
 
         private static void SendClientsMessage(string IP, int port, string packet)
